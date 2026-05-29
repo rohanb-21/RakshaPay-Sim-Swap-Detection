@@ -1,233 +1,185 @@
-# 🏦 RakshaPay Bank — SIM Swap Attack Detection & Prevention
-> **Production-grade fraud detection system** | Python · FastAPI · XGBoost · Vonage API · JWT · SQLAlchemy
+# RakshaPay — SIM Swap Attack Detection & Prevention
+
+**Author:** Rohan Bharat  
+**Live Demo:** https://rakshapay-sim-swap-detection.onrender.com
 
 ---
 
-## 🏆 What Makes This Resume-Worthy
+## What is this?
 
-| Feature | Technology | Why It Matters |
-|---------|-----------|---------------|
-| Real SIM Swap API | Vonage Network API | Live carrier-level fraud signal |
-| ML Fraud Scoring | XGBoost · scikit-learn · AUC 1.0 | Not just rule-based — learned patterns |
-| Secure Auth | JWT · HMAC-SHA256 | Industry-standard, stateless auth |
-| Account Lockout | 5-attempt lockout · 15min | Brute force protection |
-| Rate Limiting | slowapi · per-IP | DDoS & abuse prevention |
-| ORM + Migrations | SQLAlchemy · SQLite/PostgreSQL | Switch DB with one env var |
-| Input Validation | Pydantic v2 | SQL injection & type safety |
-| Test Suite | pytest · 18 tests | Professional engineering practice |
-| API Documentation | Auto Swagger UI | `/api/docs` — zero extra work |
+RakshaPay is a demo banking application that detects and prevents SIM swap attacks in real time. A SIM swap attack happens when a fraudster convinces a telecom carrier to transfer your phone number to their SIM card — giving them access to your SMS OTPs and ultimately your bank account.
+
+This system intercepts that attack before it succeeds by scoring every login attempt using a combination of fraud signals and a trained machine learning model, then deciding whether to allow, challenge, or block the request.
 
 ---
 
-## 📁 Project Structure
+## How the Detection Works
+
+Every login goes through a risk engine that evaluates multiple signals simultaneously:
+
+- Whether the user's SIM card was recently swapped
+- Whether the device is recognized or new
+- The transaction amount being attempted
+- The IP address origin
+- Login hour patterns
+- Recent failed login attempts
+- Account age and transaction history
+
+These signals feed into two layers. The first is a rule-based layer that applies direct scoring based on known fraud patterns. The second is an XGBoost machine learning model trained on 10,000 synthetic records that calculates a fraud probability score. The two scores are blended in a 60/40 ratio to produce a final risk score between 0 and 100.
 
 ```
-vaultx-pro/
-├── backend/
-│   ├── main.py           ← FastAPI app (11 endpoints, rate limiting, JWT)
-│   ├── models.py         ← SQLAlchemy ORM (6 tables, works SQLite + PostgreSQL)
-│   ├── auth.py           ← JWT + HMAC-SHA256 hashing + account lockout
-│   ├── risk_engine.py    ← Hybrid ML + rules risk engine
-│   ├── vonage_client.py  ← Real Vonage SIM Swap API (sandbox + live)
-│   ├── config.py         ← Centralised settings from .env
-│   ├── ml/
-│   │   ├── train_model.py  ← XGBoost training on 10,000 synthetic records
-│   │   ├── fraud_model.pkl ← Trained model (auto-generated)
-│   │   └── model_meta.json ← AUC, F1, precision, recall
-│   └── pages/            ← Bank UI (5 HTML pages)
-├── tests/
-│   ├── test_auth.py      ← 5 auth unit tests
-│   ├── test_risk.py      ← 5 ML engine tests
-│   └── test_api.py       ← 8 API integration tests
-├── run.sh                ← One-click start (Mac/Linux)
-├── test.sh               ← Run full test suite
-└── README.md
+Score < 35   →  Allow (normal login)
+Score 35–69  →  Challenge (step-up verification required)
+Score ≥ 70   →  Block (access denied, fraud alert created)
 ```
 
 ---
 
-## 🚀 Quick Start (Mac M1)
-
-### Prerequisites
-```bash
-# Install Homebrew if not already installed
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# Install Python 3
-brew install python3
-```
-
-### Run the project
-```bash
-cd vaultx-pro
-chmod +x run.sh test.sh
-./run.sh
-```
-
-The script automatically:
-- Creates a Python virtual environment
-- Installs all dependencies
-- Trains the XGBoost ML model (first run only)
-- Starts the server
-
-### Open in browser
-| Page | URL |
-|------|-----|
-| 🏦 Bank App | http://localhost:8000 |
-| 📝 Register | http://localhost:8000/register |
-| 🛡️ Admin Panel | http://localhost:8000/admin |
-| 📖 Swagger API Docs | http://localhost:8000/api/docs |
-
----
-
-## 🔌 Vonage SIM Swap API Setup (Optional — makes it fully real)
-
-### Step 1 — Create free account
-Go to https://developer.vonage.com → Sign up (free, no card needed)
-
-### Step 2 — Create Application
-- Dashboard → "Create Application"
-- Name it "RakshaPay"
-- Enable **Network Registry** capability → select **Playground**
-- Click "Generate public and private key" → download `private.key`
-
-### Step 3 — Configure
-```bash
-# Copy private key to project
-cp ~/Downloads/private.key backend/vonage_private.key
-
-# Edit .env
-VONAGE_APPLICATION_ID=your-app-id-from-dashboard
-VONAGE_PRIVATE_KEY_PATH=./vonage_private.key
-VONAGE_ENVIRONMENT=sandbox
-```
-
-### Step 4 — Use virtual numbers for demo
-Vonage Playground provides virtual phone numbers starting with `+990`:
-- Register with phone `+990123456`
-- These trigger real Vonage API responses — no real carrier needed!
-
----
-
-## 🎬 Demo Walkthrough
-
-### Normal Login (Low Risk)
-1. Register at `/register` with phone `9876543210`
-2. Login → OTP shown → Enter → Dashboard ✅
-3. Risk Score: ~5–15 | Action: ALLOW
-
-### SIM Swap Attack Demo
-1. Go to `/admin` → Click **⚡ Simulate** on your user
-2. Try to login again
-3. Risk Score: 55–90 | Action: BLOCK or CHALLENGE 🚫
-4. Fraud alert appears in admin panel
-
-### Show ML in action
-- Admin panel → Model Meta card shows: AUC, F1, Precision, Recall
-- Every login log shows both rule score AND ML probability
-
----
-
-## 🧠 Risk Engine — How It Works
-
-```
-Final Score = 60% × Rule Score + 40% × ML Score
-
-Rule signals:
-  SIM swap < 1hr     → +70 pts  (hard BLOCK override)
-  SIM swap < 24hr    → +55 pts
-  SIM swap < 72hr    → +30 pts
-  Unknown device     → +15 pts
-  Txn > ₹1,00,000   → +20 pts
-  Txn > ₹50,000     → +10 pts
-  External IP        → +8 pts
-  Failed attempts    → +10 pts
-
-ML features (XGBoost):
-  hours_since_sim_swap, is_known_device,
-  transaction_amount, is_external_ip,
-  login_hour, failed_attempts_1h,
-  account_age_days, txns_last_24h
-
-Score ≥ 70  →  🔴 BLOCK
-Score 35–69 →  🟡 CHALLENGE (step-up auth)
-Score < 35  →  🟢 ALLOW
-```
-
----
-
-## 🧪 Running Tests
-
-```bash
-./test.sh
-# or
-cd backend && python3 -m pytest ../tests/ -v
-```
-
-Expected output:
-```
-18 passed in ~3s
-```
-
-Test categories:
-- `test_auth.py` — password hashing, JWT encode/decode, invalid tokens
-- `test_risk.py` — safe logins score low, swaps score high, flags correct
-- `test_api.py` — register, login, duplicate check, wrong password, admin endpoints
-
----
-
-## 🌐 Deploying to Production (Railway.app — Free)
-
-```bash
-# 1. Push to GitHub
-git init && git add . && git commit -m "RakshaPay v2.0"
-gh repo create vaultx-pro --public --push
-
-# 2. Go to railway.app → New Project → Deploy from GitHub
-# 3. Set environment variables in Railway dashboard
-# 4. Set start command: cd backend && python3 main.py
-# 5. Get live URL: https://vaultx-pro.railway.app ✅
-```
-
----
-
-## 📊 API Reference
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/register` | None | Create account |
-| POST | `/api/login` | None | Login + risk check |
-| POST | `/api/verify-otp` | None | Verify OTP → get JWT |
-| GET | `/api/user/me` | JWT | Get own profile |
-| POST | `/api/transfer` | User-Id header | Send money |
-| GET | `/api/admin/users` | None | All users |
-| POST | `/api/admin/simulate-swap` | None | Simulate SIM swap |
-| POST | `/api/admin/reset-swap` | None | Reset SIM swap |
-| GET | `/api/admin/fraud-logs` | None | Login attempt logs |
-| GET | `/api/admin/alerts` | None | Fraud alerts |
-| GET | `/api/admin/stats` | None | Dashboard stats |
-| GET | `/api/admin/model-meta` | None | ML model metrics |
-| GET | `/api/health` | None | Health check |
-
-Full interactive docs at: **http://localhost:8000/api/docs**
-
----
-
-## 💼 Resume Description
-
-> Built **RakshaPay**, a production-grade SIM Swap fraud detection banking system integrating the **Vonage Network API** for real-time carrier-level SIM change detection. Engineered a hybrid risk scoring engine combining **XGBoost ML** (AUC 1.0, F1 1.0 on 10K synthetic records) with rule-based fraud signals. Built with **FastAPI** + **SQLAlchemy** (SQLite/PostgreSQL), **JWT authentication**, account lockout, and **slowapi** rate limiting. Achieved 100% fraud block rate on simulated SIM swap attacks. Includes 18 automated **pytest** tests across unit, integration, and ML validation layers.
-
----
-
-## 🔧 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
-| Backend API | Python 3.11 · FastAPI · Uvicorn |
-| ML | XGBoost · scikit-learn · pandas · NumPy |
-| Auth | JWT (python-jose) · HMAC-SHA256 |
-| Database | SQLAlchemy ORM · SQLite (dev) · PostgreSQL (prod) |
-| Fraud API | Vonage Network SIM Swap API |
+|---|---|
+| Backend | Python 3.11 · FastAPI · Uvicorn |
+| Machine Learning | XGBoost · scikit-learn · NumPy · pandas |
+| Authentication | JWT (python-jose) · HMAC-SHA256 |
+| Database | SQLAlchemy ORM · SQLite |
 | Security | slowapi rate limiting · Pydantic validation · account lockout |
-| Testing | pytest · TestClient · mock |
-| Deploy | Railway / Render / AWS |
+| Frontend | HTML5 · CSS3 · Vanilla JavaScript |
+| Testing | pytest · 18 tests |
+| Deployment | Render |
+
+---
+
+## Features
+
+- Real-time SIM swap detection on every login
+- XGBoost ML fraud scoring (AUC 1.0 on test data)
+- Risk-based authentication — ALLOW / CHALLENGE / BLOCK decisions
+- JWT authentication with token expiry
+- Account lockout after 5 failed login attempts
+- Rate limiting on all sensitive endpoints
+- Live RBA meter on login page showing risk score as you type
+- Admin panel with fraud logs, alerts, and SIM swap simulator
+- Full audit trail of every login attempt
+- Swagger API documentation at `/api/docs`
+
+---
+
+## Running Locally
+
+**Requirements:** Python 3.11, pip
+
+```bash
+# Clone the repo
+git clone https://github.com/rohanb-21/RakshaPay-Sim-Swap-Detection.git
+cd RakshaPay-Sim-Swap-Detection
+
+# Create virtual environment
+python3.11 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Train the ML model
+python3.11 ml/train_model.py
+
+# Start the server
+python3.11 main.py
+```
+
+Open http://localhost:8000 in your browser.
+
+---
+
+## Demo Walkthrough
+
+**Normal login flow:**
+1. Register at `/register` with any details
+2. Login — risk score will be low, access allowed
+3. Enter the OTP shown on screen
+4. You're in the dashboard
+
+**Simulating a SIM swap attack:**
+1. Go to `/admin`
+2. Click **⚡ Simulate** next to your user
+3. Try to login again
+4. Watch the RBA meter jump — login gets blocked with risk score 70+
+5. Fraud alert is automatically created in the admin panel
+
+**Resetting:**
+1. Go back to `/admin`
+2. Click **✓ Reset** — account is safe again
+
+---
+
+## Project Structure
+
+```
+RakshaPay-Sim-Swap-Detection/
+├── main.py              — FastAPI server, all API routes
+├── models.py            — SQLAlchemy database models
+├── auth.py              — JWT tokens, password hashing, account lockout
+├── risk_engine.py       — Hybrid ML + rule-based risk scoring
+├── vonage_client.py     — Vonage SIM Swap API integration (sandbox ready)
+├── config.py            — Environment-based configuration
+├── ml/
+│   ├── train_model.py   — XGBoost model training script
+│   ├── fraud_model.pkl  — Trained model (generated on first run)
+│   └── model_meta.json  — Model performance metrics
+├── pages/
+│   ├── login.html       — Login page with live RBA meter
+│   ├── register.html    — Account creation
+│   ├── dashboard.html   — Account overview
+│   ├── transfer.html    — Money transfer with risk preview
+│   └── admin.html       — Fraud dashboard and simulator
+├── tests/
+│   ├── test_auth.py     — Auth unit tests
+│   ├── test_risk.py     — Risk engine tests
+│   └── test_api.py      — API integration tests
+├── requirements.txt
+├── runtime.txt
+└── Procfile
+```
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/register` | Create account |
+| POST | `/api/login` | Login with risk assessment |
+| POST | `/api/verify-otp` | Verify OTP, receive JWT |
+| GET | `/api/user/{id}` | Get user profile |
+| POST | `/api/transfer` | Transfer money |
+| GET | `/api/admin/users` | All registered users |
+| POST | `/api/admin/simulate-swap` | Simulate SIM swap |
+| POST | `/api/admin/reset-swap` | Reset SIM swap |
+| GET | `/api/admin/fraud-logs` | Login attempt logs |
+| GET | `/api/admin/alerts` | Fraud alerts |
+| GET | `/api/admin/stats` | Dashboard statistics |
+| GET | `/api/admin/model-meta` | ML model performance |
+| GET | `/api/health` | Health check |
+
+Full interactive docs: https://rakshapay-sim-swap-detection.onrender.com/api/docs
+
+---
+
+## About Vonage Integration
+
+The `vonage_client.py` file is built and ready to connect to the Vonage Network SIM Swap API. When Vonage credentials are configured via environment variables, the system makes real API calls to check whether a phone number's SIM was recently changed at the carrier level.
+
+Without credentials, the system falls back to the local database simulation — which is what powers the demo on Render. The detection logic, risk scoring, and blocking behavior are identical in both modes.
+
+To enable real Vonage calls, create a free account at https://developer.vonage.com, generate an application with Network Registry enabled, and set `VONAGE_APPLICATION_ID` and `VONAGE_PRIVATE_KEY_PATH` in your environment variables.
+
+---
+
+## Resume Description
+
+Built RakshaPay, a production-grade SIM Swap fraud detection system for banking. Engineered a hybrid risk engine combining XGBoost ML (AUC 1.0, trained on 10K records) with rule-based fraud signals for real-time login risk scoring. Backend built with FastAPI and SQLAlchemy, secured with JWT authentication, rate limiting, and account lockout. Integrated Vonage Network API architecture for carrier-level SIM swap detection. Deployed on Render with 18 automated pytest tests covering auth, ML, and API layers.
+
+---
+
+*Built by Rohan Bharat*
