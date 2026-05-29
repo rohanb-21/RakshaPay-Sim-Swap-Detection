@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RakshaPay — Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060b18;--surface:#0d1626;--card:#0f1a2e;--border:#1a2840;--border2:#243044;--cyan:#38bdf8;--cyan-dim:rgba(56,189,248,0.1);--green:#34d399;--red:#f87171;--yellow:#fbbf24;--text:#e2e8f0;--muted:#64748b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
+.admin-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:50}
+.header-left{display:flex;align-items:center;gap:16px}
+.logo-text{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px}
+.logo-text span{color:var(--cyan)}
+.admin-badge{background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:var(--red);font-size:11px;font-weight:600;letter-spacing:1px;padding:3px 10px;border-radius:20px;text-transform:uppercase}
+.header-right{display:flex;gap:12px;align-items:center}
+.back-link{color:var(--muted);font-size:13px;text-decoration:none}
+.back-link:hover{color:var(--cyan)}
+.refresh-btn{background:var(--cyan-dim);border:1px solid rgba(56,189,248,0.3);color:var(--cyan);padding:7px 16px;border-radius:8px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px}
+.refresh-btn:hover{background:rgba(56,189,248,0.18)}
+.admin-body{padding:28px 36px}
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.stat-val{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.c-cyan{color:var(--cyan)}.c-red{color:var(--red)}.c-green{color:var(--green)}.c-yellow{color:var(--yellow)}
+.section{margin-bottom:28px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-header h2{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600}
+.section-header p{color:var(--muted);font-size:12px;margin-top:2px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:rgba(255,255,255,0.02)}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:12px 16px;border-bottom:1px solid var(--border)}
+td{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.badge-red{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+.badge-green{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
+.badge-yellow{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)}
+.badge-blue{background:rgba(56,189,248,0.1);color:var(--cyan);border:1px solid rgba(56,189,248,0.2)}
+.badge-grey{background:rgba(100,116,139,0.1);color:var(--muted);border:1px solid rgba(100,116,139,0.2)}
+.mono{font-family:'JetBrains Mono',monospace}
+.muted{color:var(--muted)}
+.swap-btn{padding:6px 14px;border-radius:7px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;border:none;transition:all .15s}
+.swap-btn.simulate{background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.3);color:var(--red)}
+.swap-btn.simulate:hover{background:rgba(248,113,113,0.22)}
+.swap-btn.reset{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--green)}
+.swap-btn.reset:hover{background:rgba(52,211,153,0.2)}
+.toast{position:fixed;bottom:28px;right:28px;padding:14px 20px;border-radius:10px;font-size:14px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.4);transform:translateY(80px);opacity:0;transition:all .3s ease;z-index:1000;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-red{background:#1a0f0f;border:1px solid rgba(248,113,113,0.4);color:var(--red)}
+.toast-green{background:#0a1f16;border:1px solid rgba(52,211,153,0.4);color:var(--green)}
+.auto-refresh{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse-anim 2s ease infinite;box-shadow:0 0 5px var(--green)}
+@keyframes pulse-anim{0%,100%{opacity:1}50%{opacity:.4}}
+.empty{text-align:center;padding:36px;color:var(--muted);font-size:14px}
+.sim-swapped-row{background:rgba(248,113,113,0.04)!important}
+.live-badge{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.25);color:var(--green);font-size:11px;font-weight:600;letter-spacing:1px;padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+<header class="admin-header">
+<div class="header-left">
+<div class="logo-text">RAKSHA<span>PAY</span></div>
+<div class="admin-badge">Admin</div>
+</div>
+<div class="header-right">
+<div class="auto-refresh"><div class="pulse-dot"></div>Live</div>
+<button class="refresh-btn" onclick="loadAll()">⟳ Refresh</button>
+<a class="back-link" href="/dashboard">← Back to Bank</a>
+</div>
+</header>
+<div class="admin-body">
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">Total Users</div><div class="stat-val c-cyan" id="s-users">—</div><div class="stat-sub">Registered accounts</div></div>
+<div class="stat-card"><div class="stat-label">SIM Swapped</div><div class="stat-val c-red" id="s-swapped">—</div><div class="stat-sub">Currently flagged</div></div>
+<div class="stat-card"><div class="stat-label">Blocked Logins</div><div class="stat-val c-red" id="s-blocked">—</div><div class="stat-sub">All time</div></div>
+<div class="stat-card"><div class="stat-label">Challenged</div><div class="stat-val c-yellow" id="s-challenged">—</div><div class="stat-sub">Step-up auth</div></div>
+<div class="stat-card"><div class="stat-label">Open Alerts</div><div class="stat-val c-red" id="s-alerts">—</div><div class="stat-sub">Unresolved</div></div>
+</div>
+<div class="section">
+<div class="section-header">
+<div><h2>🎮 SIM Swap Simulator</h2><p>Simulate or reset a SIM swap on any account</p></div>
+<div class="live-badge"><div class="pulse-dot"></div>DEMO TOOL</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>Balance</th><th>SIM Status</th><th>Swapped At</th><th>Action</th></tr></thead>
+<tbody id="usersBody"><tr><td colspan="8"><div class="empty">Loading users...</div></td></tr></tbody>
+</table>
+</div>
+</div>
+<div class="section">
+<div class="section-header"><div><h2>🚨 Fraud Alerts</h2><p>All fraud events triggered by the detection engine</p></div></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Time</th><th>User</th><th>Type</th><th>Severity</th><th>Details</th></tr></thead>
+<tbody id="alertsBody"><tr><td colspan="5"><div class="empty">Loading alerts...</div></td></tr></tbody>
+</table>
+</div>
+</div>
+<div class="section">
+<div class="section-header"><div><h2>📋 Login Attempt Logs</h2><p>Every login attempt with risk score and action</p></div></div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Time</th><th>User</th><th>Phone</th><th>Risk Score</th><th>ML Score</th><th>Flags</th><th>Action</th></tr></thead>
+<tbody id="logsBody"><tr><td colspan="7"><div class="empty">Loading logs...</div></td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function showToast(msg,type='green'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast toast-${type} show`;setTimeout(()=>t.classList.remove('show'),3000);}
+async function loadStats(){const res=await fetch('/api/admin/stats');const d=await res.json();document.getElementById('s-users').textContent=d.total_users;document.getElementById('s-swapped').textContent=d.swapped_users;document.getElementById('s-blocked').textContent=d.blocked_logins;document.getElementById('s-challenged').textContent=d.challenged_logins;document.getElementById('s-alerts').textContent=d.open_alerts;}
+async function loadUsers(){
+const res=await fetch('/api/admin/users');const users=await res.json();const tbody=document.getElementById('usersBody');
+if(!users.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty">No users yet. <a href="/register" style="color:var(--cyan)">Register one!</a></div></td></tr>';return;}
+tbody.innerHTML=users.map(u=>{
+const swapped=!!u.sim_swapped_at;
+const swapTime=swapped?new Date(u.sim_swapped_at).toLocaleString():'—';
+return`<tr ${swapped?'class="sim-swapped-row"':''}>
+<td class="mono muted">${u.id}</td>
+<td style="font-weight:600">${u.name}</td>
+<td class="mono">${u.phone}</td>
+<td class="muted" style="font-size:12px">${u.email}</td>
+<td class="mono">₹${Number(u.balance).toLocaleString('en-IN',{minimumFractionDigits:0})}</td>
+<td>${swapped?'<span class="badge badge-red">⚠ SWAPPED</span>':'<span class="badge badge-green">✓ SAFE</span>'}</td>
+<td class="mono muted" style="font-size:12px">${swapTime}</td>
+<td>${swapped?`<button class="swap-btn reset" onclick="resetSwap(${u.id},'${u.name}')">✓ Reset</button>`:`<button class="swap-btn simulate" onclick="simulateSwap(${u.id},'${u.name}')">⚡ Simulate</button>`}</td>
+</tr>`;}).join('');
+}
+async function loadAlerts(){
+const res=await fetch('/api/admin/alerts');const alerts=await res.json();const tbody=document.getElementById('alertsBody');
+if(!alerts.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty">No alerts yet.</div></td></tr>';return;}
+tbody.innerHTML=alerts.map(a=>{
+const sc=a.severity==='HIGH'?'badge-red':a.severity==='MEDIUM'?'badge-yellow':'badge-grey';
+const tc=a.alert_type.includes('BLOCK')||a.alert_type.includes('SWAP')?'badge-red':a.alert_type.includes('CHALLENGE')?'badge-yellow':'badge-blue';
+return`<tr><td class="mono muted" style="font-size:12px">${new Date(a.created_at).toLocaleString()}</td><td style="font-weight:500">${a.name}<br><span class="muted" style="font-size:11px">${a.phone}</span></td><td><span class="badge ${tc}">${a.alert_type}</span></td><td><span class="badge ${sc}">${a.severity}</span></td><td style="font-size:12px;color:var(--muted);max-width:300px">${a.details}</td></tr>`;
+}).join('');
+}
+async function loadLogs(){
+const res=await fetch('/api/admin/fraud-logs');const logs=await res.json();const tbody=document.getElementById('logsBody');
+if(!logs.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">No login attempts yet.</div></td></tr>';return;}
+tbody.innerHTML=logs.map(l=>{
+const ac=l.action==='BLOCK'?'badge-red':l.action==='CHALLENGE'?'badge-yellow':'badge-green';
+const sc=l.risk_score>=70?'var(--red)':l.risk_score>=35?'var(--yellow)':'var(--green)';
+const flags=l.flags?l.flags.replace(/[\[\]']/g,'').trim():'—';
+return`<tr><td class="mono muted" style="font-size:11px">${new Date(l.created_at).toLocaleString()}</td><td style="font-weight:500">${l.name}</td><td class="mono" style="font-size:12px">${l.phone}</td><td><span class="mono" style="font-size:16px;color:${sc};font-weight:500">${l.risk_score}</span><span class="muted" style="font-size:11px"> /100</span></td><td><span class="mono" style="font-size:13px;color:var(--muted)">${l.ml_score?Number(l.ml_score).toFixed(2):'—'}</span></td><td style="font-size:11px;color:var(--muted)">${flags}</td><td><span class="badge ${ac}">${l.action}</span></td></tr>`;
+}).join('');
+}
+async function simulateSwap(uid,name){
+if(!confirm(`Simulate SIM swap for ${name}?\n\nTheir next login will be BLOCKED.`))return;
+const res=await fetch('/api/admin/simulate-swap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid})});
+const d=await res.json();
+if(d.success){showToast(`🔴 SIM swap simulated for ${name}. Next login → BLOCKED.`,'red');loadAll();}
+}
+async function resetSwap(uid,name){
+const res=await fetch('/api/admin/reset-swap',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:uid})});
+const d=await res.json();
+if(d.success){showToast(`✅ SIM swap reset for ${name}. Account safe.`,'green');loadAll();}
+}
+async function loadAll(){await Promise.all([loadStats(),loadUsers(),loadAlerts(),loadLogs()]);}
+loadAll();
+setInterval(loadAll,8000);
+</script>
+</body>
+</html>

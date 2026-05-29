@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RakshaPay Bank — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060b18;--surface:#0d1626;--border:#1a2840;--cyan:#38bdf8;--cyan-dim:rgba(56,189,248,0.12);--green:#34d399;--red:#f87171;--yellow:#fbbf24;--text:#e2e8f0;--muted:#64748b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.15}
+.orb1{width:500px;height:500px;background:#0ea5e9;top:-150px;left:-100px}
+.orb2{width:400px;height:400px;background:#6366f1;bottom:-100px;right:-80px}
+.container{display:grid;grid-template-columns:1fr 1fr;max-width:1000px;width:95%;min-height:600px;border-radius:20px;overflow:hidden;border:1px solid var(--border);box-shadow:0 0 60px rgba(56,189,248,0.08),0 20px 60px rgba(0,0,0,0.5);position:relative;z-index:1}
+.left-panel{background:linear-gradient(145deg,#0c1a35,#060b18);padding:44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.left-panel::after{content:'';position:absolute;right:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--cyan),transparent);opacity:.3}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:42px;height:42px;background:var(--cyan-dim);border:1px solid rgba(56,189,248,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:22px;height:22px}
+.logo-text{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:2px}
+.logo-text span{color:var(--cyan)}
+.hero-text{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 0}
+.hero-text h1{font-family:'Rajdhani',sans-serif;font-size:34px;font-weight:700;line-height:1.15;margin-bottom:12px}
+.hero-text h1 span{color:var(--cyan)}
+.hero-text p{color:var(--muted);font-size:13px;line-height:1.7;max-width:260px}
+
+/* ── RBA Live Panel ── */
+.rba-panel{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:14px;padding:18px}
+.rba-title{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.rba-live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.rba-score-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.rba-score-num{font-family:'JetBrains Mono',monospace;font-size:32px;font-weight:500;transition:color .3s}
+.rba-score-label{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:600;font-family:'JetBrains Mono',monospace;transition:all .3s}
+.label-low{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.3)}
+.label-med{background:rgba(251,191,36,0.1);color:var(--yellow);border:1px solid rgba(251,191,36,0.3)}
+.label-high{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.3)}
+.rba-bar-wrap{background:rgba(255,255,255,0.05);border-radius:6px;height:8px;overflow:hidden;margin-bottom:12px;position:relative}
+.rba-bar{height:100%;border-radius:6px;transition:width .5s ease,background .3s}
+.rba-factors{display:flex;flex-direction:column;gap:7px}
+.rba-factor{display:flex;align-items:center;justify-content:space-between;font-size:11px}
+.rba-factor-name{color:var(--muted);display:flex;align-items:center;gap:6px}
+.rba-factor-val{font-family:'JetBrains Mono',monospace;font-size:11px}
+.factor-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+
+/* ── Right Panel ── */
+.right-panel{background:var(--surface);padding:44px;display:flex;flex-direction:column;justify-content:center}
+h2{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.subtitle{color:var(--muted);font-size:13px;margin-bottom:28px}
+.form-group{margin-bottom:18px}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+input{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,0.1)}
+input::placeholder{color:var(--muted)}
+.btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:6px}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:#060b18}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(56,189,248,0.3)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.divider{text-align:center;margin:16px 0;color:var(--muted);font-size:13px;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border)}
+.divider::before{left:0}.divider::after{right:0}
+.link-row{text-align:center;font-size:13px;color:var(--muted)}
+.link-row a{color:var(--cyan);text-decoration:none;font-weight:500}
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none}
+.alert.show{display:block}
+.alert-red{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)}
+.alert-green{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--green)}
+
+/* ── OTP Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(6,11,24,0.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;width:420px;box-shadow:0 0 60px rgba(56,189,248,0.1);animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal h3{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.modal p{color:var(--muted);font-size:13px;margin-bottom:20px;line-height:1.6}
+.otp-demo-box{background:rgba(56,189,248,0.08);border:1px dashed rgba(56,189,248,0.3);border-radius:10px;padding:12px 16px;margin-bottom:18px}
+.otp-demo-box .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.otp-demo-box .code{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:500;color:var(--cyan);letter-spacing:6px;margin-top:4px}
+
+/* ── RBA Decision Screen ── */
+.decision-screen{position:fixed;inset:0;background:rgba(6,11,24,0.92);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:150;flex-direction:column;text-align:center;padding:40px}
+.decision-screen.show{display:flex;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.decision-card{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:44px;max-width:480px;width:100%;box-shadow:0 0 60px rgba(0,0,0,0.5)}
+.decision-icon{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px}
+.decision-icon.allow{background:rgba(52,211,153,0.1);border:2px solid var(--green);animation:pulse-green 2s infinite}
+.decision-icon.challenge{background:rgba(251,191,36,0.1);border:2px solid var(--yellow);animation:pulse-yellow 2s infinite}
+.decision-icon.block{background:rgba(248,113,113,0.1);border:2px solid var(--red);animation:pulse-red 2s infinite}
+@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.3)}50%{box-shadow:0 0 0 14px rgba(52,211,153,0)}}
+@keyframes pulse-yellow{0%,100%{box-shadow:0 0 0 0 rgba(251,191,36,0.3)}50%{box-shadow:0 0 0 14px rgba(251,191,36,0)}}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,0.3)}50%{box-shadow:0 0 0 14px rgba(248,113,113,0)}}
+.decision-title{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;margin-bottom:8px}
+.decision-title.allow{color:var(--green)}
+.decision-title.challenge{color:var(--yellow)}
+.decision-title.block{color:var(--red)}
+.decision-desc{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px}
+.decision-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.d-stat{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px}
+.d-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.d-stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500}
+.flags-row{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:20px}
+.flag-chip{font-size:10px;font-family:'JetBrains Mono',monospace;padding:3px 8px;border-radius:20px;background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+.flag-chip.yellow{background:rgba(251,191,36,0.1);color:var(--yellow);border-color:rgba(251,191,36,0.2)}
+.decision-btn{padding:12px 28px;border-radius:10px;border:none;font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;margin:0 6px}
+.decision-btn.primary{background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:#060b18}
+.decision-btn.secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
+.decision-btn:hover{transform:translateY(-1px)}
+
+/* ── Block Screen ── */
+.block-screen{position:fixed;inset:0;background:rgba(6,11,24,0.95);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;z-index:200;flex-direction:column;text-align:center;padding:40px}
+.block-screen.show{display:flex}
+.block-icon{width:80px;height:80px;background:rgba(248,113,113,0.1);border:2px solid var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:24px;animation:pulse-red 2s infinite}
+.block-screen h2{font-family:'Rajdhani',sans-serif;font-size:32px;color:var(--red);margin-bottom:12px}
+.block-screen p{color:var(--muted);font-size:15px;max-width:400px;line-height:1.7;margin-bottom:20px}
+.risk-badge{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--red);background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:8px;padding:8px 16px;margin-bottom:30px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);padding:12px 28px;width:auto}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+.spinner{width:16px;height:16px;border:2px solid rgba(6,11,24,0.3);border-top-color:#060b18;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="container">
+  <!-- Left Panel with RBA Live Meter -->
+  <div class="left-panel">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <div class="logo-text">RAKSHA<span>PAY</span></div>
+    </div>
+
+    <div class="hero-text">
+      <h1>Risk-Based<br/><span>Authentication</span></h1>
+      <p>Every login is scored in real time. Watch the meter as you type.</p>
+    </div>
+
+    <!-- LIVE RBA METER -->
+    <div class="rba-panel">
+      <div class="rba-title"><div class="rba-live-dot"></div>RBA Engine — Live</div>
+      <div class="rba-score-row">
+        <div class="rba-score-num" id="rbaScore" style="color:var(--green)">0</div>
+        <div class="rba-score-label label-low" id="rbaLabel">LOW RISK</div>
+      </div>
+      <div class="rba-bar-wrap">
+        <div class="rba-bar" id="rbaBar" style="width:0%;background:var(--green)"></div>
+      </div>
+      <div class="rba-factors">
+        <div class="rba-factor">
+          <span class="rba-factor-name"><div class="factor-dot" style="background:var(--muted)"></div>SIM Swap Signal</span>
+          <span class="rba-factor-val" id="f-sim" style="color:var(--green)">✓ Safe</span>
+        </div>
+        <div class="rba-factor">
+          <span class="rba-factor-name"><div class="factor-dot" style="background:var(--muted)"></div>Device Trust</span>
+          <span class="rba-factor-val" id="f-device" style="color:var(--muted)">Checking...</span>
+        </div>
+        <div class="rba-factor">
+          <span class="rba-factor-name"><div class="factor-dot" style="background:var(--muted)"></div>ML Fraud Score</span>
+          <span class="rba-factor-val" id="f-ml" style="color:var(--muted)">Pending</span>
+        </div>
+        <div class="rba-factor">
+          <span class="rba-factor-name"><div class="factor-dot" style="background:var(--muted)"></div>Decision</span>
+          <span class="rba-factor-val" id="f-decision" style="color:var(--muted)">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Sign in to RakshaPay — your secure bank</p>
+    <div id="alert" class="alert"><span id="alertMsg"></span></div>
+    <div class="form-group"><label>Email Address</label><input type="email" id="email" placeholder="you@email.com" oninput="updateMeter()"/></div>
+    <div class="form-group"><label>Password</label><input type="password" id="password" placeholder="••••••••" oninput="updateMeter()" onkeydown="if(event.key==='Enter') doLogin()"/></div>
+    <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">SIGN IN</button>
+    <div class="divider">or</div>
+    <div class="link-row">No account? <a href="/register">Create one</a></div>
+    <div class="link-row" style="margin-top:10px;"><a href="/admin" style="color:var(--muted);font-size:12px;">🔐 Admin Panel</a></div>
+  </div>
+</div>
+
+<!-- OTP Modal -->
+<div class="modal-overlay" id="otpModal">
+  <div class="modal">
+    <h3 id="otpTitle">Verify Your Identity</h3>
+    <p id="otpDesc">OTP generated. Enter it below to continue.</p>
+    <div class="otp-demo-box"><div class="label">🎓 Demo OTP</div><div class="code" id="demoOtp">------</div></div>
+    <div class="form-group"><label>Enter OTP</label><input type="text" id="otpInput" placeholder="6-digit code" maxlength="6" style="font-family:'JetBrains Mono',monospace;font-size:22px;letter-spacing:6px;text-align:center;" onkeydown="if(event.key==='Enter') verifyOtp()"/></div>
+    <div id="otpAlert" class="alert" style="margin-bottom:12px;"></div>
+    <button class="btn btn-primary" onclick="verifyOtp()">VERIFY OTP</button>
+  </div>
+</div>
+
+<!-- RBA Decision Screen -->
+<div class="decision-screen" id="decisionScreen">
+  <div class="decision-card">
+    <div class="decision-icon" id="decisionIcon">🔐</div>
+    <div class="decision-title" id="decisionTitle">Analysing...</div>
+    <p class="decision-desc" id="decisionDesc">RBA engine is evaluating your login risk.</p>
+    <div class="decision-stats">
+      <div class="d-stat"><div class="d-stat-label">Risk Score</div><div class="d-stat-val" id="ds-score">—</div></div>
+      <div class="d-stat"><div class="d-stat-label">ML Probability</div><div class="d-stat-val" id="ds-ml">—</div></div>
+      <div class="d-stat"><div class="d-stat-label">Risk Level</div><div class="d-stat-val" id="ds-level">—</div></div>
+      <div class="d-stat"><div class="d-stat-label">Action Taken</div><div class="d-stat-val" id="ds-action">—</div></div>
+    </div>
+    <div class="flags-row" id="ds-flags"></div>
+    <div>
+      <button class="decision-btn primary" id="decisionProceedBtn" onclick="proceedAfterDecision()" style="display:none">Continue →</button>
+      <button class="decision-btn secondary" onclick="closeDecision()">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- Block Screen -->
+<div class="block-screen" id="blockScreen">
+  <div class="block-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+  <h2>ACCESS BLOCKED</h2>
+  <p id="blockMsg">Login blocked due to SIM swap fraud detection.</p>
+  <div class="risk-badge" id="riskInfo">Risk Score: -- | Flags: --</div>
+  <button class="btn btn-primary btn-outline" onclick="document.getElementById('blockScreen').classList.remove('show')">Back to Login</button>
+</div>
+
+<script>
+let pendingUserId = null;
+let pendingOtpData = null;
+
+// ── Live RBA Meter (animates as user types) ────────────────
+function updateMeter() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  let score = 0;
+
+  // Simulate signals visually
+  if (email.length > 3)    score += 5;
+  if (password.length > 0) score += 5;
+
+  // Device check — first visit is unknown
+  const isKnown = localStorage.getItem('rp_known_device');
+  if (!isKnown) { score += 20; setFactor('f-device', '⚠ New Device', 'var(--yellow)'); }
+  else          { setFactor('f-device', '✓ Trusted', 'var(--green)'); }
+
+  // ML pending
+  setFactor('f-ml', 'Will run on submit', 'var(--muted)');
+  setFactor('f-decision', '—', 'var(--muted)');
+
+  updateBar(score);
+}
+
+function setFactor(id, text, color) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = text; el.style.color = color; }
+}
+
+function updateBar(score) {
+  score = Math.min(score, 100);
+  const bar   = document.getElementById('rbaBar');
+  const num   = document.getElementById('rbaScore');
+  const label = document.getElementById('rbaLabel');
+  bar.style.width = score + '%';
+
+  if (score >= 70) {
+    bar.style.background = 'var(--red)';
+    num.style.color = 'var(--red)';
+    label.className = 'rba-score-label label-high';
+    label.textContent = 'HIGH RISK';
+  } else if (score >= 35) {
+    bar.style.background = 'var(--yellow)';
+    num.style.color = 'var(--yellow)';
+    label.className = 'rba-score-label label-med';
+    label.textContent = 'MEDIUM RISK';
+  } else {
+    bar.style.background = 'var(--green)';
+    num.style.color = 'var(--green)';
+    label.className = 'rba-score-label label-low';
+    label.textContent = 'LOW RISK';
+  }
+
+  // Animate number
+  let current = parseInt(num.textContent) || 0;
+  const step  = score > current ? 1 : -1;
+  if (current !== score) {
+    const t = setInterval(() => {
+      current += step;
+      num.textContent = current;
+      if (current === score) clearInterval(t);
+    }, 20);
+  }
+}
+
+// ── Login ──────────────────────────────────────────────────
+function showAlert(type, msg) {
+  const el = document.getElementById('alert');
+  el.className = `alert show alert-${type}`;
+  document.getElementById('alertMsg').textContent = msg;
+}
+
+async function doLogin() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn      = document.getElementById('loginBtn');
+  if (!email || !password) { showAlert('red', 'Please fill in all fields.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>ANALYSING RISK...';
+  document.getElementById('alert').classList.remove('show');
+
+  // Show decision screen with loading state
+  showDecisionScreen(null);
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email, password,
+        device_id: 'browser-' + navigator.userAgent.slice(0, 20),
+        ip: '127.0.0.1'
+      })
+    });
+    const data = await res.json();
+
+    // Update RBA meter with real scores
+    if (data.risk) {
+      updateBar(data.risk.score);
+      const mlPct = Math.round((data.risk.ml_prob || 0) * 100);
+      setFactor('f-ml', mlPct + '% fraud prob', mlPct > 50 ? 'var(--red)' : mlPct > 20 ? 'var(--yellow)' : 'var(--green)');
+
+      if (data.risk.flags && data.risk.flags.includes('SIM_SWAP_CRITICAL') || data.risk.flags.includes('SIM_SWAP_LAST_24H')) {
+        setFactor('f-sim', '⚠ SWAPPED!', 'var(--red)');
+      } else {
+        setFactor('f-sim', '✓ Safe', 'var(--green)');
+      }
+      setFactor('f-decision', data.risk.action, data.risk.action === 'ALLOW' ? 'var(--green)' : data.risk.action === 'CHALLENGE' ? 'var(--yellow)' : 'var(--red)');
+    }
+
+    // Show decision screen with result
+    await sleep(800); // let meter animate
+    showDecisionScreen(data);
+    localStorage.setItem('rp_known_device', '1');
+
+  } catch(e) {
+    closeDecision();
+    showAlert('red', 'Cannot connect to server. Is the backend running?');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'SIGN IN';
+  }
+}
+
+// ── RBA Decision Screen ────────────────────────────────────
+function showDecisionScreen(data) {
+  const screen = document.getElementById('decisionScreen');
+  screen.classList.add('show');
+
+  if (!data) {
+    // Loading state
+    document.getElementById('decisionIcon').className   = 'decision-icon challenge';
+    document.getElementById('decisionIcon').textContent = '⏳';
+    document.getElementById('decisionTitle').className  = 'decision-title challenge';
+    document.getElementById('decisionTitle').textContent = 'Analysing Risk...';
+    document.getElementById('decisionDesc').textContent  = 'RBA engine is checking SIM swap, device, ML model...';
+    document.getElementById('ds-score').textContent  = '—';
+    document.getElementById('ds-ml').textContent     = '—';
+    document.getElementById('ds-level').textContent  = '—';
+    document.getElementById('ds-action').textContent = '—';
+    document.getElementById('ds-flags').innerHTML    = '';
+    document.getElementById('decisionProceedBtn').style.display = 'none';
+    return;
+  }
+
+  const risk   = data.risk || {};
+  const action = risk.action || (data.success ? 'ALLOW' : 'BLOCK');
+  const score  = risk.score  || 0;
+  const ml     = risk.ml_prob != null ? (risk.ml_prob * 100).toFixed(1) + '%' : '—';
+  const flags  = risk.flags  || [];
+
+  document.getElementById('ds-score').textContent  = score + '/100';
+  document.getElementById('ds-ml').textContent     = ml;
+  document.getElementById('ds-level').textContent  = risk.level || '—';
+  document.getElementById('ds-action').textContent = action;
+
+  // Flags
+  document.getElementById('ds-flags').innerHTML = flags.length
+    ? flags.map(f => `<span class="flag-chip ${action==='CHALLENGE'?'yellow':''}">${f}</span>`).join('')
+    : '<span style="color:var(--muted);font-size:12px">No suspicious flags</span>';
+
+  if (action === 'ALLOW') {
+    document.getElementById('decisionIcon').className   = 'decision-icon allow';
+    document.getElementById('decisionIcon').textContent = '✅';
+    document.getElementById('decisionTitle').className  = 'decision-title allow';
+    document.getElementById('decisionTitle').textContent = 'ACCESS ALLOWED';
+    document.getElementById('decisionDesc').textContent  = 'RBA engine verified your login as safe. Low fraud probability detected.';
+    document.getElementById('ds-action').style.color    = 'var(--green)';
+    document.getElementById('decisionProceedBtn').style.display = 'inline-block';
+    pendingOtpData = data;
+
+  } else if (action === 'CHALLENGE') {
+    document.getElementById('decisionIcon').className   = 'decision-icon challenge';
+    document.getElementById('decisionIcon').textContent = '⚠️';
+    document.getElementById('decisionTitle').className  = 'decision-title challenge';
+    document.getElementById('decisionTitle').textContent = 'STEP-UP AUTH REQUIRED';
+    document.getElementById('decisionDesc').textContent  = 'Medium risk detected. RBA requires additional verification before granting access.';
+    document.getElementById('ds-action').style.color    = 'var(--yellow)';
+    document.getElementById('decisionProceedBtn').style.display = 'inline-block';
+    pendingOtpData = data;
+
+  } else {
+    document.getElementById('decisionIcon').className   = 'decision-icon block';
+    document.getElementById('decisionIcon').textContent = '🚫';
+    document.getElementById('decisionTitle').className  = 'decision-title block';
+    document.getElementById('decisionTitle').textContent = 'ACCESS BLOCKED';
+    document.getElementById('decisionDesc').textContent  = data.message || 'High risk detected. SIM swap fraud suspected. Contact your branch immediately.';
+    document.getElementById('ds-action').style.color    = 'var(--red)';
+    document.getElementById('decisionProceedBtn').style.display = 'none';
+  }
+}
+
+function proceedAfterDecision() {
+  closeDecision();
+  if (!pendingOtpData) return;
+  const data = pendingOtpData;
+  pendingUserId = data.user_id;
+  document.getElementById('demoOtp').textContent = data.otp;
+  if (data.action === 'CHALLENGE') {
+    document.getElementById('otpTitle').textContent      = '⚠️ Step-Up Verification';
+    document.getElementById('otpTitle').style.color      = 'var(--yellow)';
+    document.getElementById('otpDesc').textContent       = 'Medium risk detected. Verify your OTP to continue.';
+  } else {
+    document.getElementById('otpTitle').textContent      = 'Verify Your Identity';
+    document.getElementById('otpTitle').style.color      = 'var(--text)';
+    document.getElementById('otpDesc').textContent       = 'Login looks safe. Enter OTP to continue.';
+  }
+  document.getElementById('otpModal').classList.add('show');
+}
+
+function closeDecision() {
+  document.getElementById('decisionScreen').classList.remove('show');
+}
+
+// ── OTP Verify ─────────────────────────────────────────────
+async function verifyOtp() {
+  const otp     = document.getElementById('otpInput').value.trim();
+  const alertEl = document.getElementById('otpAlert');
+  alertEl.className = 'alert';
+  if (otp.length !== 6) { alertEl.className = 'alert show alert-red'; alertEl.textContent = 'Please enter 6-digit OTP.'; return; }
+  try {
+    const res  = await fetch('/api/verify-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: pendingUserId, otp }) });
+    const data = await res.json();
+    if (data.success) {
+      localStorage.setItem('userId', data.user.id);
+      localStorage.setItem('userName', data.user.name);
+      window.location.href = '/dashboard';
+    } else {
+      alertEl.className   = 'alert show alert-red';
+      alertEl.textContent = data.detail || 'Incorrect OTP.';
+    }
+  } catch(e) { alertEl.className = 'alert show alert-red'; alertEl.textContent = 'Server error.'; }
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// Init meter
+updateMeter();
+</script>
+</body>
+</html>

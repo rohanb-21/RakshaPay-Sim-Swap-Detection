@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RakshaPay Bank — Transfer</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060b18;--surface:#0d1626;--card:#111827;--border:#1a2840;--border2:#243044;--cyan:#38bdf8;--cyan-dim:rgba(56,189,248,0.1);--green:#34d399;--red:#f87171;--yellow:#fbbf24;--text:#e2e8f0;--muted:#64748b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;position:relative;z-index:1}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 24px 28px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.logo-icon{width:34px;height:34px;background:var(--cyan-dim);border:1px solid rgba(56,189,248,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px}
+.logo-text{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px}
+.logo-text span{color:var(--cyan)}
+.nav-label{font-size:10px;font-weight:600;color:#475569;letter-spacing:1.5px;text-transform:uppercase;padding:8px 24px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;text-decoration:none;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.nav-item.active{color:var(--cyan);background:var(--cyan-dim);border-left-color:var(--cyan)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.sidebar-bottom{margin-top:auto;padding:0 16px}
+.user-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#6366f1);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+.user-info .name{font-size:13px;font-weight:600}
+.user-info .email{font-size:11px;color:var(--muted)}
+.logout-btn{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;padding:4px}
+.logout-btn:hover{color:var(--red)}
+.main{padding:32px 36px;max-width:700px}
+.page-header{margin-bottom:28px}
+.page-header h1{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:1px}
+.page-header p{color:var(--muted);font-size:13px;margin-top:3px}
+.balance-mini{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.balance-mini .label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.balance-mini .amount{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--cyan);margin-top:4px}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 30px}
+.form-card h3{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:600;margin-bottom:22px}
+.form-group{margin-bottom:20px}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+input{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,0.1)}
+input::placeholder{color:var(--muted)}
+.amount-row{position:relative}
+.currency-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--cyan);font-weight:500}
+.amount-input{padding-left:36px!important;font-family:'JetBrains Mono',monospace!important;font-size:20px!important}
+.risk-preview{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:20px}
+.risk-preview .rp-title{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:10px}
+.risk-bar-wrap{background:rgba(255,255,255,0.05);border-radius:4px;height:6px;overflow:hidden;margin-bottom:8px}
+.risk-bar{height:100%;border-radius:4px;transition:width .4s ease}
+.risk-bar.low{background:var(--green)}
+.risk-bar.med{background:var(--yellow)}
+.risk-bar.high{background:var(--red)}
+.risk-text{font-size:12px;color:var(--muted)}
+.btn{width:100%;padding:14px;border-radius:10px;border:none;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:#060b18}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(56,189,248,0.3)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+.alert{padding:12px 16px;border-radius:10px;font-size:14px;margin-bottom:16px;display:none;line-height:1.5}
+.alert.show{display:block}
+.alert-red{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:var(--red)}
+.alert-green{background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);color:var(--green)}
+.spinner{width:16px;height:16px;border:2px solid rgba(6,11,24,0.3);border-top-color:#060b18;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.success-screen{display:none;text-align:center;padding:40px 0}
+.success-screen.show{display:block}
+.success-icon{width:72px;height:72px;border-radius:50%;background:rgba(52,211,153,0.12);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:pulse-green 2s ease infinite}
+@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.3)}50%{box-shadow:0 0 0 14px rgba(52,211,153,0)}}
+.success-screen h3{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;color:var(--green);margin-bottom:8px}
+.success-screen p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.success-details{background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.2);border-radius:12px;padding:16px 20px;text-align:left;margin-bottom:20px}
+.sd-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0}
+.sd-row span:first-child{color:var(--muted)}
+.sd-row span:last-child{font-family:'JetBrains Mono',monospace;color:var(--text)}
+.btn-back{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-back:hover{border-color:var(--cyan);color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-logo">
+<div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+<div class="logo-text">RAKSHA<span>PAY</span></div>
+</div>
+<div class="nav-label">Menu</div>
+<a class="nav-item" href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a class="nav-item active" href="/transfer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg>Transfer Money</a>
+<div class="nav-label" style="margin-top:12px;">Security</div>
+<a class="nav-item" href="/admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Admin Panel</a>
+<div class="sidebar-bottom">
+<div class="user-card">
+<div class="avatar" id="sideAvatar">?</div>
+<div class="user-info"><div class="name" id="sideName">...</div><div class="email" id="sideEmail">—</div></div>
+<button class="logout-btn" onclick="logout()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+</div>
+</div>
+</aside>
+<main class="main">
+<div class="page-header"><h1>Transfer Money</h1><p>Securely send money — every transfer is risk-checked in real time.</p></div>
+<div class="balance-mini">
+<div><div class="label">Available Balance</div><div class="amount">₹<span id="balance">--,--,---</span></div></div>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+</div>
+<div class="form-card" id="formSection">
+<h3>New Transfer</h3>
+<div id="alert" class="alert"></div>
+<div class="form-group"><label>Recipient Name</label><input type="text" id="recipient" placeholder="e.g. Priya Patel" oninput="updateRisk()"/></div>
+<div class="form-group"><label>Amount (INR)</label><div class="amount-row"><span class="currency-prefix">₹</span><input class="amount-input" type="number" id="amount" placeholder="0.00" min="1" oninput="updateRisk()"/></div></div>
+<div class="risk-preview">
+<div class="rp-title">Transaction Risk Preview</div>
+<div class="risk-bar-wrap"><div class="risk-bar low" id="riskBar" style="width:5%"></div></div>
+<div class="risk-text" id="riskText">Enter amount to see risk assessment</div>
+</div>
+<button class="btn btn-primary" id="txnBtn" onclick="doTransfer()">TRANSFER NOW</button>
+</div>
+<div class="form-card success-screen" id="successSection">
+<div class="success-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+<h3>Transfer Successful!</h3>
+<p>Your money has been sent securely.</p>
+<div class="success-details" id="successDetails"></div>
+<button class="btn btn-back" onclick="resetForm()">Make Another Transfer</button>
+</div>
+</main>
+</div>
+<script>
+const uid=localStorage.getItem('userId');
+if(!uid)window.location.href='/';
+let userBalance=0;
+async function init(){
+const res=await fetch(`/api/user/${uid}`);
+const data=await res.json();
+userBalance=data.balance;
+document.getElementById('balance').textContent=Number(data.balance).toLocaleString('en-IN',{minimumFractionDigits:2});
+document.getElementById('sideName').textContent=data.name;
+document.getElementById('sideEmail').textContent=data.email;
+document.getElementById('sideAvatar').textContent=data.name[0].toUpperCase();
+}
+function updateRisk(){
+const amount=parseFloat(document.getElementById('amount').value)||0;
+const bar=document.getElementById('riskBar');
+const text=document.getElementById('riskText');
+let score=5,level='low',desc='';
+if(amount>0&&amount<=1000){score=8;level='low';desc=`Low risk — ₹${amount.toLocaleString('en-IN')} is a small transfer`;}
+if(amount>1000&&amount<=10000){score=15;level='low';desc='Moderate amount — standard verification';}
+if(amount>10000&&amount<=50000){score=25;level='low';desc='Higher value — extra security checks applied';}
+if(amount>50000){score=50;level='med';desc='⚠️ High value transfer — risk score increases significantly';}
+bar.style.width=score+'%';bar.className='risk-bar '+level;
+text.textContent=desc||'Enter an amount to preview risk';
+}
+async function doTransfer(){
+const recipient=document.getElementById('recipient').value.trim();
+const amount=parseFloat(document.getElementById('amount').value);
+const btn=document.getElementById('txnBtn');
+const alertEl=document.getElementById('alert');
+alertEl.className='alert';
+if(!recipient||!amount||amount<=0){alertEl.className='alert show alert-red';alertEl.textContent='Please fill in all fields.';return;}
+if(amount>userBalance){alertEl.className='alert show alert-red';alertEl.textContent=`Insufficient balance.`;return;}
+btn.disabled=true;btn.innerHTML='<span class="spinner"></span>PROCESSING...';
+try{
+const res=await fetch('/api/transfer',{method:'POST',headers:{'Content-Type':'application/json','X-User-Id':uid},body:JSON.stringify({amount,recipient})});
+const data=await res.json();
+if(data.success){
+document.getElementById('formSection').style.display='none';
+document.getElementById('successDetails').innerHTML=`
+<div class="sd-row"><span>To</span><span>${recipient}</span></div>
+<div class="sd-row"><span>Amount</span><span>₹${amount.toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
+<div class="sd-row"><span>New Balance</span><span>₹${Number(data.new_balance).toLocaleString('en-IN',{minimumFractionDigits:2})}</span></div>
+<div class="sd-row"><span>Risk Score</span><span>${data.risk.score}/100</span></div>
+<div class="sd-row"><span>Status</span><span style="color:var(--green)">✓ Cleared</span></div>`;
+document.getElementById('successSection').classList.add('show');
+}else if(data.action==='BLOCK'){
+alertEl.className='alert show alert-red';
+alertEl.innerHTML=`<strong>🚫 Transfer Blocked</strong><br>${data.message}<br><small>Risk Score: ${data.risk.score}/100</small>`;
+}else{alertEl.className='alert show alert-red';alertEl.textContent=data.detail||'Transfer failed.';}
+}catch(e){alertEl.className='alert show alert-red';alertEl.textContent='Server error.';}
+finally{btn.disabled=false;btn.innerHTML='TRANSFER NOW';}
+}
+function resetForm(){
+document.getElementById('successSection').classList.remove('show');
+document.getElementById('formSection').style.display='';
+document.getElementById('recipient').value='';
+document.getElementById('amount').value='';
+document.getElementById('alert').className='alert';
+updateRisk();init();
+}
+function logout(){localStorage.clear();window.location.href='/';}
+init();
+</script>
+</body>
+</html>

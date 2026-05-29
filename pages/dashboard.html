@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RakshaPay Bank — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060b18;--surface:#0d1626;--card:#111827;--border:#1a2840;--border2:#243044;--cyan:#38bdf8;--cyan-dim:rgba(56,189,248,0.1);--green:#34d399;--red:#f87171;--yellow:#fbbf24;--text:#e2e8f0;--muted:#64748b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none}
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;position:relative;z-index:1}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:28px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:0 24px 28px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.logo-icon{width:34px;height:34px;background:var(--cyan-dim);border:1px solid rgba(56,189,248,0.3);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px}
+.logo-text{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;letter-spacing:2px}
+.logo-text span{color:var(--cyan)}
+.nav-label{font-size:10px;font-weight:600;color:#475569;letter-spacing:1.5px;text-transform:uppercase;padding:8px 24px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 24px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;text-decoration:none;border-left:3px solid transparent}
+.nav-item:hover{color:var(--text);background:rgba(255,255,255,0.03)}
+.nav-item.active{color:var(--cyan);background:var(--cyan-dim);border-left-color:var(--cyan)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.sidebar-bottom{margin-top:auto;padding:0 16px}
+.user-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#6366f1);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;color:#fff;flex-shrink:0}
+.user-info .name{font-size:13px;font-weight:600}
+.user-info .email{font-size:11px;color:var(--muted)}
+.logout-btn{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;padding:4px}
+.logout-btn:hover{color:var(--red)}
+.main{padding:32px 36px;overflow-y:auto}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:30px}
+.page-header h1{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;letter-spacing:1px}
+.page-header p{color:var(--muted);font-size:13px;margin-top:3px}
+.badge{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.badge-green{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
+.badge-red{background:rgba(248,113,113,0.1);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+.balance-card{background:linear-gradient(135deg,#0c1a35 0%,#0a1628 50%,#060b18 100%);border:1px solid var(--border2);border-radius:18px;padding:30px 32px;position:relative;overflow:hidden;margin-bottom:24px}
+.balance-card::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,0.08) 0%,transparent 70%);top:-80px;right:-60px;pointer-events:none}
+.balance-card .label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.balance-card .amount{font-family:'JetBrains Mono',monospace;font-size:40px;font-weight:500;color:var(--text);margin-bottom:4px}
+.balance-card .amount span{color:var(--cyan)}
+.balance-card .sub{font-size:13px;color:var(--muted)}
+.balance-card .actions{display:flex;gap:12px;margin-top:24px}
+.btn-sm{padding:10px 20px;border-radius:9px;border:none;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s}
+.btn-cyan{background:var(--cyan);color:#060b18}
+.btn-cyan:hover{box-shadow:0 4px 14px rgba(56,189,248,0.3);transform:translateY(-1px)}
+.btn-outline-sm{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-outline-sm:hover{border-color:var(--cyan);color:var(--cyan)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+.stat-card .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.stat-card .stat-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;margin-bottom:4px}
+.stat-card .stat-sub{font-size:12px;color:var(--muted)}
+.security-panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:24px}
+.security-panel h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:600;margin-bottom:16px}
+.security-rows{display:flex;flex-direction:column;gap:12px}
+.security-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px}
+.security-row .row-left{display:flex;align-items:center;gap:12px}
+.row-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.row-icon.green{background:rgba(52,211,153,0.1)}
+.row-title{font-size:14px;font-weight:500}
+.row-sub{font-size:12px;color:var(--muted)}
+.status-dot{width:8px;height:8px;border-radius:50%}
+.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot-red{background:var(--red);box-shadow:0 0 6px var(--red)}
+.txn-section h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:600;margin-bottom:16px}
+.txn-table{width:100%;border-collapse:collapse}
+.txn-table th{text-align:left;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:0 0 12px;border-bottom:1px solid var(--border)}
+.txn-table td{padding:14px 0;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+.txn-table tr:last-child td{border-bottom:none}
+.txn-recip{font-weight:500}
+.txn-date{color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace}
+.txn-amt{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--red);text-align:right}
+.txn-risk{text-align:right}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+<div class="sidebar-logo">
+<div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+<div class="logo-text">RAKSHA<span>PAY</span></div>
+</div>
+<div class="nav-label">Menu</div>
+<a class="nav-item active" href="/dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
+<a class="nav-item" href="/transfer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19,12 12,19 5,12"/></svg>Transfer Money</a>
+<div class="nav-label" style="margin-top:12px;">Security</div>
+<a class="nav-item" href="/admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Admin Panel</a>
+<div class="sidebar-bottom">
+<div class="user-card">
+<div class="avatar" id="sideAvatar">?</div>
+<div class="user-info"><div class="name" id="sideName">Loading...</div><div class="email" id="sideEmail">—</div></div>
+<button class="logout-btn" onclick="logout()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+</div>
+</div>
+</aside>
+<main class="main">
+<div class="page-header">
+<div><h1>Account Overview</h1><p id="welcomeMsg">Welcome back!</p></div>
+<span class="badge badge-green">● SIM SAFE</span>
+</div>
+<div class="balance-card">
+<div class="label">Total Balance</div>
+<div class="amount">₹<span id="balance">--,--,---</span></div>
+<div class="sub" id="acctNum">Account ••••••••</div>
+<div class="actions">
+<button class="btn-sm btn-cyan" onclick="window.location.href='/transfer'">↑ Transfer</button>
+<button class="btn-sm btn-outline-sm" onclick="loadData()">⟳ Refresh</button>
+</div>
+</div>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">Phone</div><div class="stat-val" id="userPhone" style="font-size:16px;color:var(--cyan)">—</div><div class="stat-sub">Registered number</div></div>
+<div class="stat-card"><div class="stat-label">Email</div><div class="stat-val" id="userEmail" style="font-size:14px">—</div><div class="stat-sub">Linked email</div></div>
+<div class="stat-card"><div class="stat-label">Transactions</div><div class="stat-val" id="txnCount" style="color:var(--yellow)">0</div><div class="stat-sub">Total transfers</div></div>
+</div>
+<div class="security-panel">
+<h3>🛡️ Security Status</h3>
+<div class="security-rows">
+<div class="security-row"><div class="row-left"><div class="row-icon green">🔐</div><div><div class="row-title">Two-Factor Authentication</div><div class="row-sub">OTP verification enabled</div></div></div><div class="status-dot dot-green"></div></div>
+<div class="security-row"><div class="row-left"><div class="row-icon green">📱</div><div><div class="row-title">SIM Swap Detection</div><div class="row-sub">No recent SIM activity detected</div></div></div><div class="status-dot dot-green"></div></div>
+<div class="security-row"><div class="row-left"><div class="row-icon green">🌐</div><div><div class="row-title">Device Tracking</div><div class="row-sub">Browser fingerprinting active</div></div></div><div class="status-dot dot-green"></div></div>
+</div>
+</div>
+<div class="txn-section">
+<h3>Recent Transactions</h3>
+<table class="txn-table">
+<thead><tr><th>Recipient</th><th>Date & Time</th><th style="text-align:right">Amount</th><th style="text-align:right">Risk Score</th></tr></thead>
+<tbody id="txnBody"><tr><td colspan="4"><div class="empty-state">Loading...</div></td></tr></tbody>
+</table>
+</div>
+</main>
+</div>
+<script>
+const uid=localStorage.getItem('userId');
+if(!uid)window.location.href='/';
+async function loadData(){
+try{
+const res=await fetch(`/api/user/${uid}`);
+const data=await res.json();
+document.getElementById('welcomeMsg').textContent=`Welcome back, ${data.name}`;
+document.getElementById('sideName').textContent=data.name;
+document.getElementById('sideEmail').textContent=data.email;
+document.getElementById('sideAvatar').textContent=data.name[0].toUpperCase();
+document.getElementById('balance').textContent=Number(data.balance).toLocaleString('en-IN',{minimumFractionDigits:2});
+document.getElementById('acctNum').textContent=`Account  ••••  ${data.id.toString().padStart(4,'0')}`;
+document.getElementById('userPhone').textContent=data.phone;
+document.getElementById('userEmail').textContent=data.email;
+document.getElementById('txnCount').textContent=data.transactions.length;
+const tbody=document.getElementById('txnBody');
+if(!data.transactions.length){tbody.innerHTML='<tr><td colspan="4"><div class="empty-state">No transactions yet. Make your first transfer!</div></td></tr>';}
+else{tbody.innerHTML=data.transactions.map(t=>`<tr><td><div class="txn-recip">${t.recipient}</div></td><td><div class="txn-date">${new Date(t.created_at).toLocaleString()}</div></td><td class="txn-amt">-₹${Number(t.amount).toLocaleString('en-IN',{minimumFractionDigits:2})}</td><td class="txn-risk"><span class="badge ${t.risk_score>=70?'badge-red':'badge-green'}">${t.risk_score}</span></td></tr>`).join('');}
+}catch(e){console.error(e);}
+}
+function logout(){localStorage.clear();window.location.href='/';}
+loadData();
+setInterval(loadData,10000);
+</script>
+</body>
+</html>

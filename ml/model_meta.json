@@ -1,0 +1,18 @@
+{
+  "features": [
+    "hours_since_sim_swap",
+    "is_known_device",
+    "transaction_amount",
+    "is_external_ip",
+    "login_hour",
+    "failed_attempts_1h",
+    "account_age_days",
+    "txns_last_24h"
+  ],
+  "auc": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "cv_auc_mean": 1.0,
+  "trained_on": "10000 samples"
+}
