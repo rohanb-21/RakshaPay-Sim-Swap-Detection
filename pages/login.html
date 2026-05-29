@@ -375,7 +375,7 @@ function showDecisionScreen(data) {
   const risk   = data.risk || {};
   const action = risk.action || (data.success ? 'ALLOW' : 'BLOCK');
   const score  = risk.score  || 0;
-  const ml     = risk.ml_prob != null ? (risk.ml_prob * 100).toFixed(1) + '%' : '—';
+  const ml     = risk.ml_prob != null ? (risk.ml_prob * 100).toFixed(3) + '%' : '—';
   const flags  = risk.flags  || [];
 
   document.getElementById('ds-score').textContent  = score + '/100';
