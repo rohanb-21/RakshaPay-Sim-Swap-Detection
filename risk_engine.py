@@ -152,7 +152,8 @@ class RiskEngine:
             "is_external_ip", "login_hour", "failed_attempts_1h",
             "account_age_days", "txns_last_24h",
         ]
-        X = np.array([[kwargs[f] for f in features]])
+        import pandas as pd
+        X = pd.DataFrame([[kwargs[f] for f in features]], columns=features)
         X_s = self.scaler.transform(X)
         return float(self.model.predict_proba(X_s)[0][1])
 
