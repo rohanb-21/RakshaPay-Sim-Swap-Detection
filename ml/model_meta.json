@@ -13,6 +13,5 @@
   "precision": 1.0,
   "recall": 1.0,
   "f1": 1.0,
-  "cv_auc_mean": 1.0,
   "trained_on": "10000 samples"
 }

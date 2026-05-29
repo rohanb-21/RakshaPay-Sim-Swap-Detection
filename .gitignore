@@ -3,5 +3,3 @@ __pycache__/
 *.pyc
 *.db
 .env
-ml/fraud_model.pkl
-ml/scaler.pkl
