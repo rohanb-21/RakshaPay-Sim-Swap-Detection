@@ -16,13 +16,13 @@ OUT_DIR = os.path.dirname(__file__)
 def generate_data(n_legit=6000, n_fraud=4000):
     records = []
 
-    # Legitimate samples - exactly matching real demo patterns
+    # Legitimate samples - include unknown device and external IP as normal
     for _ in range(n_legit):
         records.append({
-            "hours_since_sim_swap": -1,
-            "is_known_device": np.random.choice([1, 0], p=[0.85, 0.15]),
+            "hours_since_sim_swap": -1,          # No swap = legitimate
+            "is_known_device": np.random.choice([1, 0], p=[0.5, 0.5]),
             "transaction_amount": 0,
-            "is_external_ip": 1,
+            "is_external_ip": np.random.choice([1, 0], p=[0.7, 0.3]),
             "login_hour": np.random.randint(0, 23),
             "failed_attempts_1h": 0,
             "account_age_days": np.random.randint(30, 1000),
@@ -31,17 +31,22 @@ def generate_data(n_legit=6000, n_fraud=4000):
         })
 
     
-    # Fraudulent samples - exactly matching real demo patterns
+    # Fraudulent samples - SIM swap is the KEY differentiator
     for _ in range(n_fraud):
+        hours = np.random.choice([
+            np.random.uniform(0, 1),    # Critical: 0-1hr
+            np.random.uniform(1, 24),   # High: 1-24hr
+            np.random.uniform(24, 72),  # Medium: 24-72hr
+        ], p=[0.5, 0.3, 0.2])
         records.append({
-            "hours_since_sim_swap": np.random.uniform(0, 0.5),
-            "is_known_device": 0,
+            "hours_since_sim_swap": hours,
+            "is_known_device": np.random.choice([1, 0], p=[0.2, 0.8]),
             "transaction_amount": 0,
-            "is_external_ip": 1,
+            "is_external_ip": np.random.choice([1, 0], p=[0.7, 0.3]),
             "login_hour": np.random.randint(0, 23),
             "failed_attempts_1h": 0,
-            "account_age_days": np.random.randint(1, 10),
-            "txns_last_24h": 0,
+            "account_age_days": np.random.randint(1, 500),
+            "txns_last_24h": np.random.randint(0, 5),
             "label": 1
         })
 
