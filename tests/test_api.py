@@ -8,12 +8,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Use in-memory SQLite for tests
-os.environ["DATABASE_URL"] = "sqlite:///./test_vaultx.db"
+os.environ["DATABASE_URL"] = "sqlite:///./test_rakshapay.db"
 
 from models import Base, get_db
 from main import app
 
-TEST_DB_URL = "sqlite:///./test_vaultx.db"
+TEST_DB_URL = "sqlite:///./test_rakshapay.db"
 engine = create_engine(TEST_DB_URL, connect_args={"check_same_thread": False})
 TestSession = sessionmaker(bind=engine)
 Base.metadata.create_all(bind=engine)

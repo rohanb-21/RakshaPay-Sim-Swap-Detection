@@ -1,5 +1,5 @@
 """
-VaultX — Vonage SIM Swap Client
+RakshaPay — Vonage SIM Swap Client
 ================================
 Uses the real Vonage Identity Insights API.
 Falls back to sandbox mode when no credentials are configured,
@@ -17,7 +17,7 @@ from typing import Optional
 
 from config import settings
 
-logger = logging.getLogger("vaultx.vonage")
+logger = logging.getLogger("rakshapay.vonage")
 
 
 class SimSwapResult:

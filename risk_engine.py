@@ -1,5 +1,5 @@
 """
-VaultX — Hybrid Risk Engine
+RakshaPay — Hybrid Risk Engine
 ============================
 Combines:
   1. Vonage real-time SIM swap signal
@@ -19,7 +19,7 @@ import numpy as np
 
 from vonage_client import vonage_client
 
-logger = logging.getLogger("vaultx.risk")
+logger = logging.getLogger("rakshapay.risk")
 
 ML_DIR     = os.path.join(os.path.dirname(__file__), "ml")
 MODEL_PATH  = os.path.join(ML_DIR, "fraud_model.pkl")
