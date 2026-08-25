@@ -1,7 +1,7 @@
 # RakshaPay — SIM Swap Attack Detection & Prevention
 
 **Author:** Rohan Bharat  
-**Live Demo:** https://rakshapay-sim-swap-detection.onrender.com
+<!-- **Live Demo:** https://rakshapay-sim-swap-detection.onrender.com -->
 
 ---
 
