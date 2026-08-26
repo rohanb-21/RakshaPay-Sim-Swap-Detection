@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RakshaPay — Admin Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060b18;--surface:#0d1626;--border:#1a2840;--cyan:#38bdf8;--cyan-dim:rgba(56,189,248,0.12);--red:#f87171;--text:#e2e8f0;--muted:#64748b}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;opacity:.15}.orb1{width:500px;height:500px;background:#0ea5e9;top:-150px;left:-100px}.orb2{width:400px;height:400px;background:#6366f1;bottom:-100px;right:-80px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:44px;width:95%;max-width:440px;box-shadow:0 0 60px rgba(56,189,248,0.08),0 20px 60px rgba(0,0,0,0.5);position:relative;z-index:1}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:34px}.logo-icon{width:42px;height:42px;background:var(--cyan-dim);border:1px solid rgba(56,189,248,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center}.logo-icon svg{width:22px;height:22px}.logo-text{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;letter-spacing:2px}.logo-text span{color:var(--cyan)}
+.badge{display:inline-block;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red);font-size:10px;font-weight:600;letter-spacing:1.2px;padding:4px 9px;border-radius:20px;text-transform:uppercase;margin-bottom:12px}
+h2{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;letter-spacing:1px;margin-bottom:5px}.subtitle{color:var(--muted);font-size:13px;margin-bottom:28px}
+.form-group{margin-bottom:18px}label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}input{width:100%;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s}input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(56,189,248,.1)}input::placeholder{color:var(--muted)}
+.btn{width:100%;padding:13px;border-radius:10px;border:none;font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;margin-top:5px}.btn-primary{background:linear-gradient(135deg,#0ea5e9,#38bdf8);color:#060b18}.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(56,189,248,.3)}.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.alert{padding:11px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none}.alert.show{display:block}.alert-red{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);color:var(--red)}
+.back{text-align:center;margin-top:20px;font-size:13px}.back a{color:var(--muted);text-decoration:none}.back a:hover{color:var(--cyan)}
+.note{margin-top:20px;padding:11px 13px;border:1px solid var(--border);border-radius:9px;color:var(--muted);font-size:11px;line-height:1.5}
+.spinner{width:16px;height:16px;border:2px solid rgba(6,11,24,.3);border-top-color:#060b18;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle}@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="card">
+  <div class="logo"><div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="logo-text">RAKSHA<span>PAY</span></div></div>
+  <div class="badge">Restricted Access</div>
+  <h2>Admin Sign In</h2>
+  <p class="subtitle">Authorized administrators only.</p>
+  <div id="alert" class="alert"></div>
+  <div class="form-group"><label>Admin Email</label><input type="email" id="email" placeholder="admin@example.com" autocomplete="username"/></div>
+  <div class="form-group"><label>Admin Password</label><input type="password" id="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()"/></div>
+  <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">SIGN IN</button>
+  <div class="back"><a href="/">← Back to Bank Login</a></div>
+  <div class="note">🔐 Admin access is controlled by the server. Normal user registration cannot create an admin account.</div>
+</div>
+<script>
+function showAlert(msg){const el=document.getElementById('alert');el.className='alert show alert-red';el.textContent=msg;}
+async function doLogin(){
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const btn=document.getElementById('loginBtn');
+  if(!email||!password){showAlert('Please enter your admin email and password.');return;}
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>AUTHENTICATING...';
+  document.getElementById('alert').className='alert';
+  try{
+    const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(res.ok&&data.success){window.location.href='/admin/dashboard';}
+    else{showAlert(data.detail||'Admin authentication failed.');}
+  }catch(e){showAlert('Cannot connect to server.');}
+  finally{btn.disabled=false;btn.innerHTML='SIGN IN';}
+}
+</script>
+</body>
+</html>

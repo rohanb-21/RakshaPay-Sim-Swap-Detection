@@ -17,9 +17,9 @@ import logging
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Depends, Request, status
+from fastapi import FastAPI, HTTPException, Depends, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import BaseModel, EmailStr, validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -81,12 +81,48 @@ def dashboard_page():return FileResponse(f"{PAGES}/dashboard.html")
 def transfer_page(): return FileResponse(f"{PAGES}/transfer.html")
 
 @app.get("/admin",     include_in_schema=False)
-def admin_page():    return FileResponse(f"{PAGES}/admin.html")
+def admin_page():
+    # Public entry point: always show the admin sign-in page.
+    return FileResponse(f"{PAGES}/admin_login.html")
+
+@app.get("/admin/dashboard", include_in_schema=False)
+def admin_dashboard_page(request: Request):
+    # Never expose the admin dashboard itself without an admin session.
+    if not _is_admin_request(request):
+        return RedirectResponse(url="/admin", status_code=303)
+    return FileResponse(f"{PAGES}/admin.html")
 
 
 # ── Helpers ────────────────────────────────────────────────────
 def gen_otp() -> str:
     return "".join(random.choices(string.digits, k=6))
+
+def _is_admin_request(request: Request) -> bool:
+    token = request.cookies.get("admin_token")
+    if not token:
+        return False
+    payload = decode_token(token)
+    if not payload or payload.get("role") != "admin":
+        return False
+    return payload.get("email", "").strip().lower() == os.getenv("ADMIN_EMAIL", "").strip().lower()
+
+
+def get_current_admin(request: Request):
+    token = request.cookies.get("admin_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Admin authentication required")
+    payload = decode_token(token)
+    if not payload or payload.get("role") != "admin":
+        raise HTTPException(status_code=401, detail="Invalid or expired admin session")
+    if payload.get("email", "").strip().lower() != os.getenv("ADMIN_EMAIL", "").strip().lower():
+        raise HTTPException(status_code=401, detail="Invalid or expired admin session")
+    return payload
+
+
+class AdminLoginIn(BaseModel):
+    email: str
+    password: str
+
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     if not token:
@@ -290,6 +326,52 @@ def verify_otp(request: Request, data: OTPIn, db: Session = Depends(get_db)):
     }
 
 
+# ── Admin Authentication ──────────────────────────────────────
+@app.post("/api/admin/login", tags=["Admin Auth"])
+@limiter.limit("5/minute")
+def admin_login(request: Request, data: AdminLoginIn, response: Response):
+    # Admin identity is configured privately in environment variables.
+    # There is intentionally no public "create admin" endpoint.
+    admin_email = os.getenv("ADMIN_EMAIL", "")
+    admin_password = os.getenv("ADMIN_PASSWORD", "")
+
+    if not admin_email or not admin_password:
+        logger.error("ADMIN_EMAIL / ADMIN_PASSWORD are not configured")
+        raise HTTPException(status_code=503, detail="Admin authentication is not configured")
+
+    if data.email.strip().lower() != admin_email.strip().lower() or not verify_password(
+        data.password, hash_password(admin_password)
+    ):
+        raise HTTPException(status_code=401, detail="Invalid admin credentials")
+
+    token = create_access_token(
+        {"sub": "admin", "email": admin_email, "role": "admin"},
+        expires_delta=timedelta(minutes=30),
+    )
+
+    response.set_cookie(
+        key="admin_token",
+        value=token,
+        httponly=True,
+        secure=request.url.scheme == "https",
+        samesite="strict",
+        max_age=1800,
+        path="/",
+    )
+    return {"success": True, "message": "Admin authenticated"}
+
+
+@app.post("/api/admin/logout", tags=["Admin Auth"])
+def admin_logout(response: Response):
+    response.delete_cookie("admin_token", path="/")
+    return {"success": True}
+
+
+@app.get("/api/admin/session", tags=["Admin Auth"])
+def admin_session(admin=Depends(get_current_admin)):
+    return {"authenticated": True, "email": admin.get("email")}
+
+
 # ── User Routes ────────────────────────────────────────────────
 @app.get("/api/user/me", tags=["User"])
 def get_me(current_user=Depends(get_current_user), db: Session = Depends(get_db)):
@@ -373,7 +455,7 @@ def transfer(request: Request, data: TransferIn, db: Session = Depends(get_db)):
 
 # ── Admin Routes ───────────────────────────────────────────────
 @app.get("/api/admin/users", tags=["Admin"])
-def admin_users(db: Session = Depends(get_db)):
+def admin_users(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     users = db.query(User).order_by(User.id.desc()).all()
     return [
         {"id": u.id, "name": u.name, "email": u.email, "phone": u.phone,
@@ -384,7 +466,7 @@ def admin_users(db: Session = Depends(get_db)):
     ]
 
 @app.post("/api/admin/simulate-swap", tags=["Admin"])
-def simulate_swap(data: SwapIn, db: Session = Depends(get_db)):
+def simulate_swap(data: SwapIn, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     user = db.query(User).filter_by(id=data.user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
@@ -395,7 +477,7 @@ def simulate_swap(data: SwapIn, db: Session = Depends(get_db)):
     return {"success": True, "message": f"SIM swap simulated for {user.name}"}
 
 @app.post("/api/admin/reset-swap", tags=["Admin"])
-def reset_swap(data: SwapIn, db: Session = Depends(get_db)):
+def reset_swap(data: SwapIn, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     user = db.query(User).filter_by(id=data.user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
@@ -404,7 +486,7 @@ def reset_swap(data: SwapIn, db: Session = Depends(get_db)):
     return {"success": True, "message": f"SIM swap reset for {user.name}"}
 
 @app.get("/api/admin/fraud-logs", tags=["Admin"])
-def admin_logs(db: Session = Depends(get_db)):
+def admin_logs(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     rows = db.query(LoginAttempt, User).join(User).order_by(
         LoginAttempt.id.desc()
     ).limit(100).all()
@@ -418,7 +500,7 @@ def admin_logs(db: Session = Depends(get_db)):
     ]
 
 @app.get("/api/admin/alerts", tags=["Admin"])
-def admin_alerts(db: Session = Depends(get_db)):
+def admin_alerts(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     rows = db.query(FraudAlert, User).join(User).order_by(
         FraudAlert.id.desc()
     ).limit(100).all()
@@ -431,7 +513,7 @@ def admin_alerts(db: Session = Depends(get_db)):
     ]
 
 @app.get("/api/admin/stats", tags=["Admin"])
-def admin_stats(db: Session = Depends(get_db)):
+def admin_stats(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
     from sqlalchemy import func
     total    = db.query(func.count(User.id)).scalar()
     swapped  = db.query(func.count(User.id)).filter(User.sim_swapped_at.isnot(None)).scalar()
@@ -445,7 +527,7 @@ def admin_stats(db: Session = Depends(get_db)):
     }
 
 @app.get("/api/admin/model-meta", tags=["Admin"])
-def model_meta():
+def model_meta(admin=Depends(get_current_admin)):
     """Return ML model performance metrics."""
     return risk_engine.meta
 
