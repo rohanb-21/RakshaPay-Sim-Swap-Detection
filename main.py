@@ -130,7 +130,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     payload = decode_token(token)
     if not payload:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    user = db.query(User).filter_by(id=payload.get("sub")).first()
+    user = db.query(User).filter_by(id=int(payload["sub"])).first()
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
