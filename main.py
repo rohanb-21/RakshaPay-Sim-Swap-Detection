@@ -135,6 +135,23 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
+def get_user_flexible(request: Request, token: str = Depends(oauth2_scheme),
+                      db: Session = Depends(get_db)):
+    """Mobile app sends a login token; the website still sends X-User-Id."""
+    if token:
+        payload = decode_token(token)
+        if not payload:
+            raise HTTPException(401, "Invalid or expired token")
+        user = db.query(User).filter_by(id=int(payload["sub"])).first()
+    else:
+        uid = request.headers.get("X-User-Id")
+        if not uid:
+            raise HTTPException(401, "Not authenticated")
+        user = db.query(User).filter_by(id=int(uid)).first()
+    if not user:
+        raise HTTPException(401, "User not found")
+    return user
+
 def log_attempt(db, user_id, ip, device, result, action):
     db.add(LoginAttempt(
         user_id=user_id, ip=ip, device=device,
@@ -416,14 +433,8 @@ def get_user(uid: int, db: Session = Depends(get_db)):
 
 @app.post("/api/transfer", tags=["User"])
 @limiter.limit("20/minute")
-def transfer(request: Request, data: TransferIn, db: Session = Depends(get_db)):
-    # Get user_id from header (demo) or JWT
-    uid = request.headers.get("X-User-Id")
-    if not uid:
-        raise HTTPException(401, "User ID required")
-    user = db.query(User).filter_by(id=int(uid)).first()
-    if not user:
-        raise HTTPException(404, "User not found")
+def transfer(request: Request, data: TransferIn, db: Session = Depends(get_db),
+             user: User = Depends(get_user_flexible)):
 
     client_ip = request.client.host if request.client else "unknown"
     result = risk_engine.assess(user, data.device_id, client_ip, data.amount, db)
